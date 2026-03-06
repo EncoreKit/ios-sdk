@@ -1,0 +1,140 @@
+// Sources/Encore/Core/Canonical/User/UserManager.swift
+//
+// Manages user identity and attributes.
+// Single source of truth for "who is logged in".
+// Handles business logic; delegates data operations to repository.
+
+import Foundation
+import StoreKit
+import UIKit
+
+// MARK: - User Manager
+
+/// Domain manager for user identity.
+/// - Handles business logic (validation, state transitions, side effects)
+/// - Delegates data operations to repository (local + remote)
+/// - Does NOT know about analytics/errors — Encore facade handles those
+internal final class UserManager {
+    
+    private let repository: UserRepository
+    
+    // MARK: - Init
+    
+    init(repository: UserRepository) {
+        self.repository = repository
+        Logger.debug("👤 [USER] UserManager initialized with userId: \(repository.getUserId())")
+    }
+    
+    // MARK: - Computed Properties
+    
+    var currentUserId: String {
+        repository.getUserId()
+    }
+    
+    /// Persistent person-level identifier. On iOS, backed by Apple's appTransactionID.
+    /// Cross-device, cross-session, survives reinstalls. Nil on iOS <16 or if unresolved.
+    var appAccountId: String? {
+        repository.getAppAccountId()
+    }
+    
+    /// Directly set appAccountId. Exposed for `@testable` test injection.
+    func setAppAccountId(_ id: String) {
+        repository.setAppAccountId(id)
+    }
+    
+    /// Post-init async setup. Resolves persistent identifiers (e.g. appAccountId via StoreKit).
+    func configure() {
+        guard appAccountId == nil else { 
+            Logger.debug("👤 [USER] appAccountId is set so returning \(appAccountId)")
+            return 
+        }
+        
+        if #available(iOS 16.0, *) {
+            Task {
+                do {
+                    let result = try await AppTransaction.shared
+                    if case .verified(let appTransaction) = result,
+                       let id = Self.extractAppTransactionID(from: appTransaction) {
+                        repository.setAppAccountId(id)
+                        Logger.debug("👤 [USER] appAccountId resolved")
+                        return
+                    }
+                } catch {
+                    Logger.debug("👤 [USER] AppTransaction.shared failed: \(error)")
+                }
+                
+                #if DEBUG
+                fallbackToSyntheticId()
+                #endif
+            }
+        }
+    }
+    
+    var userAttributes: UserAttributes {
+        repository.getAttributes() ?? UserAttributes()
+    }
+    
+    // MARK: - Identity Operations
+    
+    /// Identify user. Returns true if userId changed.
+    @discardableResult
+    func identify(userId: String, attributes: UserAttributes? = nil) -> Bool {
+        let previousUserId = currentUserId
+        let userChanged = previousUserId != userId
+        
+        // Business logic: Log state transition
+        if userChanged {
+            Logger.debug("🔄 [USER] User changed '\(previousUserId)' → '\(userId)'")
+        }
+        
+        // Delegate data operation to repository (handles local + remote)
+        repository.identify(currentUserId: previousUserId, newUserId: userId, attributes: attributes)
+        
+        return userChanged
+    }
+    
+    /// Merge new attributes into current. Returns merged result.
+    @discardableResult
+    func setAttributes(_ attributes: UserAttributes) -> UserAttributes {
+        // Business logic: Merge with existing
+        let merged = userAttributes.merged(with: attributes)
+        
+        // Delegate to repository (local-only for attributes)
+        repository.updateAttributes(merged)
+        
+        return merged
+    }
+    
+    /// Reset to anonymous user. Returns new anonymous userId.
+    @discardableResult
+    func reset() -> String {
+        repository.clearAll()
+        let newUserId = repository.getUserId()
+        Logger.debug("🆔 [USER] Reset to anonymous user: \(newUserId)")
+        return newUserId
+    }
+    
+    // MARK: - Private
+    
+    /// Extract appTransactionID from AppTransaction's JSON payload.
+    /// Uses jsonRepresentation (iOS 16+) since the typed property requires Xcode 16.4+ SDK.
+    // TODO: Replace with `appTransaction.appTransactionID` when minimum Xcode is 16.4+
+    @available(iOS 16.0, *)
+    private static func extractAppTransactionID(from appTransaction: AppTransaction) -> String? {
+        guard let json = try? JSONSerialization.jsonObject(with: appTransaction.jsonRepresentation) as? [String: Any],
+              let id = json["appTransactionId"] as? String else {
+            return nil
+        }
+        return id
+    }
+    
+    #if DEBUG
+    /// Synthetic fallback for Xcode/simulator builds where AppTransaction has no appTransactionId.
+    /// Uses identifierForVendor for a stable-per-device ID so NCL flows are testable locally.
+    private func fallbackToSyntheticId() {
+        let syntheticId = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
+        repository.setAppAccountId(syntheticId)
+        Logger.warn("👤 [USER] appAccountId unavailable — using synthetic DEBUG fallback \(syntheticId)")
+    }
+    #endif
+}
