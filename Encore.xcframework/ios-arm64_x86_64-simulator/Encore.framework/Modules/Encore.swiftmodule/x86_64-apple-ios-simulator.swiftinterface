@@ -1,0 +1,356 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.2.1 effective-5.10 (swiftlang-6.2.1.4.8 clang-1700.4.4.1)
+// swift-module-flags: -target x86_64-apple-ios15.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name Encore
+// swift-module-flags-ignorable: -no-verify-emitted-module-interface -formal-cxx-interoperability-mode=off -interface-compiler-version 6.2.1
+import AVKit
+import Combine
+import CryptoKit
+import Foundation
+import Foundation/*.Data*/
+import Foundation/*.Date*/
+import Foundation/*.URL*/
+import SafariServices
+import StoreKit
+import Swift
+import SwiftUI
+import UIKit
+import _AVKit_SwiftUI
+import _Concurrency
+import _StoreKit_SwiftUI
+import _StringProcessing
+import _SwiftConcurrencyShims
+import os.lock
+import os
+public enum EncoreError : Swift.Error, Foundation.LocalizedError, Swift.Sendable {
+  case transport(EncoreError.TransportError)
+  case `protocol`(EncoreError.ProtocolError)
+  case integration(EncoreError.IntegrationError)
+  case domain(Swift.String)
+  public enum TransportError : Swift.Error, Foundation.LocalizedError, Swift.Sendable {
+    case network(any Swift.Error)
+    case persistence(any Swift.Error)
+    #if compiler(>=5.3) && $NonescapableTypes
+    public var errorDescription: Swift.String? {
+      get
+    }
+    #endif
+    #if compiler(>=5.3) && $NonescapableTypes
+    public var underlying: (any Swift.Error)? {
+      get
+    }
+    #endif
+  }
+  public enum ProtocolError : Swift.Error, Foundation.LocalizedError, Swift.Sendable {
+    case http(status: Swift.Int, message: Swift.String?)
+    case api(status: Swift.Int, code: Swift.String?, message: Swift.String)
+    case decoding(any Swift.Error)
+    #if compiler(>=5.3) && $NonescapableTypes
+    public var errorDescription: Swift.String? {
+      get
+    }
+    #endif
+    #if compiler(>=5.3) && $NonescapableTypes
+    public var underlying: (any Swift.Error)? {
+      get
+    }
+    #endif
+  }
+  public enum IntegrationError : Swift.Error, Foundation.LocalizedError, Swift.Sendable {
+    case notConfigured
+    case invalidApiKey
+    case invalidURL
+    #if compiler(>=5.3) && $NonescapableTypes
+    public var errorDescription: Swift.String? {
+      get
+    }
+    #endif
+    public func hash(into hasher: inout Swift.Hasher)
+    public var hashValue: Swift.Int {
+      get
+    }
+  }
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var errorDescription: Swift.String? {
+    get
+  }
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var underlying: (any Swift.Error)? {
+    get
+  }
+  #endif
+}
+extension EncoreError : Swift.Equatable {
+  public static func == (lhs: EncoreError, rhs: EncoreError) -> Swift.Bool
+}
+extension EncoreError.TransportError : Swift.Equatable {
+  public static func == (lhs: EncoreError.TransportError, rhs: EncoreError.TransportError) -> Swift.Bool
+}
+extension EncoreError.ProtocolError : Swift.Equatable {
+  public static func == (lhs: EncoreError.ProtocolError, rhs: EncoreError.ProtocolError) -> Swift.Bool
+}
+extension EncoreError.IntegrationError : Swift.Equatable {
+  public static func == (a: EncoreError.IntegrationError, b: EncoreError.IntegrationError) -> Swift.Bool
+}
+public struct PurchaseRequest : Swift.Sendable {
+  public let productId: Swift.String
+  public let placementId: Swift.String?
+  public let promoOfferId: Swift.String?
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init(productId: Swift.String, placementId: Swift.String? = nil, promoOfferId: Swift.String? = nil)
+  #endif
+}
+public struct UserAttributes : Swift.Codable {
+  public let email: Swift.String?
+  public let firstName: Swift.String?
+  public let lastName: Swift.String?
+  public let phoneNumber: Swift.String?
+  public let postalCode: Swift.String?
+  public let city: Swift.String?
+  public let state: Swift.String?
+  public let countryCode: Swift.String?
+  public let latitude: Swift.String?
+  public let longitude: Swift.String?
+  public let dateOfBirth: Swift.String?
+  public let gender: Swift.String?
+  public let language: Swift.String?
+  public let subscriptionTier: Swift.String?
+  public let monthsSubscribed: Swift.String?
+  public let billingCycle: Swift.String?
+  public let lastPaymentAmount: Swift.String?
+  public let lastActiveDate: Swift.String?
+  public let totalSessions: Swift.String?
+  @available(*, deprecated, message: "Use config.entitlements.iap.productId from remote config instead")
+  public let iapProductId: Swift.String?
+  public let custom: [Swift.String : Swift.String]
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init(email: Swift.String? = nil, firstName: Swift.String? = nil, lastName: Swift.String? = nil, phoneNumber: Swift.String? = nil, postalCode: Swift.String? = nil, city: Swift.String? = nil, state: Swift.String? = nil, countryCode: Swift.String? = nil, latitude: Swift.String? = nil, longitude: Swift.String? = nil, dateOfBirth: Swift.String? = nil, gender: Swift.String? = nil, language: Swift.String? = nil, subscriptionTier: Swift.String? = nil, monthsSubscribed: Swift.String? = nil, billingCycle: Swift.String? = nil, lastPaymentAmount: Swift.String? = nil, lastActiveDate: Swift.String? = nil, totalSessions: Swift.String? = nil, iapProductId: Swift.String? = nil, custom: [Swift.String : Swift.String] = [:])
+  #endif
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+@available(*, deprecated, renamed: "UserAttributes", message: "Deprecated: use UserAttributes. Will be removed in v2.0.0.")
+public typealias EncoreAttributes = UserAttributes
+public enum Cohort : Swift.String, Swift.Codable, Swift.Sendable {
+  case treatment
+  case control
+  case notEnrolled
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+extension Encore {
+  public enum LogLevel : Swift.Int, Swift.Comparable, Swift.Sendable {
+    case none
+    case error
+    case warn
+    case info
+    case debug
+    public static func < (lhs: Encore.LogLevel, rhs: Encore.LogLevel) -> Swift.Bool
+    #if compiler(>=5.3) && $NonescapableTypes
+    public init?(rawValue: Swift.Int)
+    #endif
+    public typealias RawValue = Swift.Int
+    public var rawValue: Swift.Int {
+      get
+    }
+  }
+}
+public enum MockScenario : Swift.Sendable {
+  case successWithOffer
+  case userDeclinedOffers
+  case noOfferAvailable
+  case networkError
+  case serverError
+  case invalidResponse
+  public static func == (a: MockScenario, b: MockScenario) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@available(*, deprecated, message: "Use your subscription manager's entitlement listeners instead")
+public protocol EncoreDelegate : AnyObject {
+  func encoreDidChangeEntitlement(_ isActive: Swift.Bool, for type: Entitlement, in scope: EntitlementScope)
+}
+extension EncoreDelegate {
+  public func encoreDidChangeEntitlement(_ isActive: Swift.Bool, for type: Entitlement, in scope: EntitlementScope)
+}
+public enum EntitlementUnit : Swift.CustomStringConvertible, Swift.Sendable {
+  case months
+  case days
+  case percent
+  case dollars
+  public var description: Swift.String {
+    get
+  }
+  public static func == (a: EntitlementUnit, b: EntitlementUnit) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public enum Entitlement : Swift.Sendable {
+  case freeTrial(value: Swift.Double? = nil, unit: EntitlementUnit? = nil)
+  case discount(value: Swift.Double? = nil, unit: EntitlementUnit? = nil)
+  case credit(value: Swift.Double? = nil, unit: EntitlementUnit? = nil)
+}
+public enum EntitlementScope : Swift.Sendable {
+  case verified
+  case all
+  public static func == (a: EntitlementScope, b: EntitlementScope) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public enum NotGrantedReason : Swift.String, Swift.Equatable, Swift.Sendable {
+  case userTappedClose
+  case userSwipedDown
+  case userTappedOutside
+  case userCancelled
+  case lastOfferDeclined
+  case dismissed
+  case noOffersAvailable
+  case unsupportedOS
+  case experimentControl
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public enum PresentationResult : Swift.Sendable {
+  case granted(Entitlement)
+  case notGranted(NotGrantedReason)
+}
+@available(*, deprecated, renamed: "PresentationResult")
+public typealias EncorePresentationResult = PresentationResult
+@_hasMissingDesignatedInitializers final public class PlacementsManager {
+  @available(*, deprecated, message: "Use shared.onPurchaseRequest() and shared.onPassthrough() instead")
+  @discardableResult
+  final public func onGranted(_ callback: @escaping (Swift.String, Entitlement) -> Swift.Void) -> PlacementsManager
+  @available(*, deprecated, message: "Use shared.onPurchaseRequest() and shared.onPassthrough() instead")
+  @discardableResult
+  final public func onNotGranted(_ callback: @escaping (Swift.String, NotGrantedReason) -> Swift.Void) -> PlacementsManager
+  @objc deinit
+}
+final public class Atomic<T> : @unchecked Swift.Sendable where T : Swift.Sendable {
+  public init(_ value: T)
+  final public var value: T {
+    get
+    set
+  }
+  final public func mutate(_ transform: (inout T) -> Swift.Void)
+  @discardableResult
+  final public func mutate<R>(_ transform: (inout T) -> R) -> R
+  @objc deinit
+}
+extension SwiftUICore.View {
+  #if compiler(>=5.3) && $NonescapableTypes
+  @available(*, deprecated, message: "Use shared.onPurchaseRequest() and shared.onPassthrough() instead. Present with placement().show()")
+  @_Concurrency.MainActor @preconcurrency public func encoreSheet(isPresented: SwiftUICore.Binding<Swift.Bool>, onGranted: ((Entitlement) -> Swift.Void)? = nil, onNotGranted: ((NotGrantedReason) -> Swift.Void)? = nil) -> some SwiftUICore.View
+  
+  #endif
+}
+
+public protocol PlacementBuilderProtocol {
+  var id: Swift.String { get }
+  func show() async throws -> PresentationResult
+  func show()
+  func onLoadingStateChange(_ callback: @escaping @Sendable (Swift.Bool) -> Swift.Void) -> Self
+  @available(*, deprecated, message: "Use shared.onPurchaseRequest() instead")
+  func onGranted(_ callback: @escaping @Sendable (Entitlement) -> Swift.Void) -> Self
+  @available(*, deprecated, message: "Use shared.onPassthrough() instead")
+  func onNotGranted(_ callback: @escaping @Sendable (NotGrantedReason) -> Swift.Void) -> Self
+}
+public protocol EncoreProtocol : AnyObject {
+  #if compiler(>=5.3) && $NonescapableTypes
+  @available(*, deprecated, message: "Use your subscription manager's entitlement listeners instead")
+  var entitlementsDelegate: (any EncoreDelegate)? { get set }
+  #endif
+  var placements: PlacementsManager { get }
+  func configure(apiKey: Swift.String, logLevel: Encore.LogLevel)
+  #if compiler(>=5.3) && $NonescapableTypes
+  func identify(userId: Swift.String, attributes: UserAttributes?)
+  #endif
+  func setUserAttributes(_ attributes: UserAttributes)
+  func reset()
+  #if compiler(>=5.3) && $NonescapableTypes
+  func placement(_ id: Swift.String?) -> any PlacementBuilderProtocol
+  #endif
+  func isActive(_ type: Entitlement, in scope: EntitlementScope) async -> Swift.Bool
+  func isActivePublisher(for type: Entitlement, in scope: EntitlementScope) -> Combine.AnyPublisher<Swift.Bool, Swift.Never>
+  var isClaimOfferDisabled: Swift.Bool { get set }
+  func revokeEntitlements() async throws
+  #if compiler(>=5.3) && $NonescapableTypes
+  func revokeEntitlements(onCompletion: @escaping (Swift.Result<Swift.Void, EncoreError>) -> Swift.Void)
+  #endif
+  @discardableResult
+  func onPurchaseRequest(_ handler: @escaping (PurchaseRequest) async throws -> Swift.Void) -> Self
+  @discardableResult
+  func onPurchaseComplete(_ handler: @escaping (StoreKit.Transaction, Swift.String) async -> Swift.Void) -> Self
+  #if compiler(>=5.3) && $NonescapableTypes
+  @discardableResult
+  func onPassthrough(_ handler: @escaping (Swift.String?) -> Swift.Void) -> Self
+  #endif
+}
+@_hasMissingDesignatedInitializers final public class Encore : EncoreProtocol {
+  public static let shared: Encore
+  @available(*, deprecated, message: "Use your subscription manager's entitlement listeners instead")
+  weak final public var entitlementsDelegate: (any EncoreDelegate)? {
+    get
+    set
+  }
+  final public var placements: PlacementsManager {
+    get
+  }
+  final public var isClaimOfferDisabled: Swift.Bool
+  final public func configure(apiKey: Swift.String, logLevel: Encore.LogLevel = .none)
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func identify(userId: Swift.String, attributes: UserAttributes? = nil)
+  #endif
+  final public func setUserAttributes(_ attributes: UserAttributes)
+  final public func reset()
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func placement(_ id: Swift.String? = nil) -> any PlacementBuilderProtocol
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public static func placement(_ id: Swift.String? = nil) -> any PlacementBuilderProtocol
+  #endif
+  final public func isActive(_ type: Entitlement, in scope: EntitlementScope = .all) async -> Swift.Bool
+  final public func isActivePublisher(for type: Entitlement, in scope: EntitlementScope = .all) -> Combine.AnyPublisher<Swift.Bool, Swift.Never>
+  final public func revokeEntitlements() async throws
+  @discardableResult
+  final public func onPurchaseRequest(_ handler: @escaping (PurchaseRequest) async throws -> Swift.Void) -> Encore
+  @discardableResult
+  final public func onPurchaseComplete(_ handler: @escaping (StoreKit.Transaction, Swift.String) async -> Swift.Void) -> Encore
+  #if compiler(>=5.3) && $NonescapableTypes
+  @discardableResult
+  final public func onPassthrough(_ handler: @escaping (Swift.String?) -> Swift.Void) -> Encore
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func revokeEntitlements(onCompletion: @escaping (Swift.Result<Swift.Void, EncoreError>) -> Swift.Void)
+  #endif
+  @objc deinit
+}
+extension EncoreError.IntegrationError : Swift.Hashable {}
+extension Cohort : Swift.Equatable {}
+extension Cohort : Swift.Hashable {}
+extension Cohort : Swift.RawRepresentable {}
+extension Encore.LogLevel : Swift.Hashable {}
+extension Encore.LogLevel : Swift.RawRepresentable {}
+extension MockScenario : Swift.Equatable {}
+extension MockScenario : Swift.Hashable {}
+extension EntitlementUnit : Swift.Equatable {}
+extension EntitlementUnit : Swift.Hashable {}
+extension EntitlementScope : Swift.Equatable {}
+extension EntitlementScope : Swift.Hashable {}
+extension NotGrantedReason : Swift.Hashable {}
+extension NotGrantedReason : Swift.RawRepresentable {}
