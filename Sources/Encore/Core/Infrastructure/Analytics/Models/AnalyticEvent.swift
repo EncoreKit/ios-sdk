@@ -1,0 +1,58 @@
+//
+//  AnalyticsEvent.swift
+//  Encore
+//
+//  Analytics event protocol and internal tracking model.
+//
+
+import Foundation
+import CryptoKit
+
+// MARK: - Analytics Event Protocol
+
+/// Protocol for typed analytics events.
+/// Conforming types provide a static event name and are Encodable.
+internal protocol AnalyticsEvent: Encodable {
+    static var eventName: String { get }
+}
+
+// MARK: - Event Envelope
+
+/// Full event envelope sent to analytics sinks. Matches backend `EventEnvelope` schema.
+/// Created from AnalyticsEvent types by AnalyticsManager.
+internal struct EventEnvelope {
+    let eventId: String          // backend: event_id (deterministic UUID via SHA256)
+    let eventName: String        // backend: event_name (e.g. "offer_shown")
+    let timestamp: Date          // backend: event_timestamp
+    let distinctId: String       // backend: distinct_id
+    let properties: [String: Any]
+    let metadata: [String: String]  // sdk_version, app_id, platform, etc.
+    
+    init(eventName: String, distinctId: String, properties: [String: Any], metadata: [String: String]) {
+        self.eventName = eventName
+        self.distinctId = distinctId
+        self.properties = properties
+        self.metadata = metadata
+        self.timestamp = Date()
+        self.eventId = Self.generateEventId(eventName: eventName, distinctId: distinctId, timestamp: timestamp)
+    }
+    
+    /// Generate deterministic event ID using SHA256.
+    /// Uses microsecond precision to avoid collisions for multiple events within the same second.
+    static func generateEventId(eventName: String, distinctId: String, timestamp: Date) -> String {
+        let timestampMicros = Int64(timestamp.timeIntervalSince1970 * 1_000_000)
+        let contentString = "\(eventName)_\(distinctId)_\(timestampMicros)"
+        let hash = SHA256.hash(data: Data(contentString.utf8))
+        let bytes = Array(hash.prefix(16))
+        
+        return String(format: "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+                      bytes[0], bytes[1], bytes[2], bytes[3],
+                      bytes[4], bytes[5],
+                      (bytes[6] & 0x0f) | 0x40,  // Version 4
+                      bytes[7],
+                      (bytes[8] & 0x3f) | 0x80,  // Variant
+                      bytes[9],
+                      bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15])
+    }
+}
+
